@@ -1,0 +1,27 @@
+# Food Dash OpenEnv — simulation + inference + API server
+# Supports: inference script mode + HF Space API mode + local dev
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app \
+    PORT=8000 \
+    NODE_API_URL=http://host.docker.internal:5000
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY openenv/ ./openenv/
+COPY openenv.yaml .
+COPY inference.py .
+COPY app.py .
+
+EXPOSE 8000
+
+# HF Spaces: run FastAPI server on configured PORT
+# Local: override with "python inference.py" for baseline evaluation
+# HTTP mode: "python inference.py --mode http" to call this server
+CMD ["python", "app.py"]

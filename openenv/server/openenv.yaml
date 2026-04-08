@@ -1,0 +1,117 @@
+spec_version: 1
+name: food-dash-env
+version: "1.0.0"
+description: >
+  RL environment connected to real FoodDash backend. Agents must balance
+  kitchen throughput, fairness, customer patience, VIP service levels,
+  recommendation quality, and overload management. Supports live order
+  data from Node.js backend with deterministic simulation fallback.
+type: simulation
+runtime: python
+module: openenv.env:FoodDashEnv
+
+backend:
+  node_api_url: http://localhost:5000
+  fallback: simulator
+  endpoints:
+    orders: /api/openenv/orders
+    status_update: /api/openenv/orders/{orderId}/status
+    health: /api/openenv/health
+
+tasks:
+  - id: easy
+    summary: Small lunch rush with one VIP customer and fairness trade-offs.
+  - id: medium
+    summary: Recommendation-enabled service with moderate load and minor kitchen disruption.
+  - id: hard
+    summary: Twenty-six staggered orders, VIP deadlines, and overload events.
+
+action_space:
+  type: object
+  properties:
+    action_type:
+      type: string
+      description: >
+        One of prioritize_order | prioritize | delay_order | recommend_item |
+        recommend | split_kitchen_load | reject_order | noop | wait | idle.
+    order_id:
+      type: integer
+      nullable: true
+      description: >
+        Target order id for prioritization, or suggested menu item id (1–50) for
+        recommendation actions.
+    order_ids:
+      type: array
+      nullable: true
+      description: Two or more order ids for split_kitchen_load.
+      items:
+        type: integer
+    user_id:
+      type: integer
+      nullable: true
+      description: Customer user id for recommend_item.
+  required: [action_type]
+
+observation_space:
+  type: object
+  properties:
+    pending_orders:
+      type: array
+      description: Orders visible to the agent and waiting for kitchen capacity.
+      items:
+        type: object
+        properties:
+          id: { type: integer }
+          table_id: { type: integer }
+          user_id: { type: integer }
+          status: { type: string }
+          order_priority: { type: string }
+          prep_time: { type: number }
+          prep_complexity: { type: integer }
+          customer_patience: { type: number }
+          patience_remaining: { type: number }
+          wait_time: { type: number }
+          queue_position: { type: integer }
+          arrival_time: { type: integer }
+          vip_deadline:
+            type: integer
+            nullable: true
+    active_orders:
+      type: array
+      description: Orders currently being prepared.
+      items:
+        type: object
+        properties:
+          id: { type: integer }
+          table_id: { type: integer }
+          user_id: { type: integer }
+          status: { type: string }
+          order_priority: { type: string }
+          prep_time: { type: number }
+          prep_complexity: { type: integer }
+          customer_patience: { type: number }
+          patience_remaining: { type: number }
+          wait_time: { type: number }
+          queue_position: { type: integer }
+          arrival_time: { type: integer }
+          vip_deadline:
+            type: integer
+            nullable: true
+    kitchen_load:
+      type: number
+      description: Current kitchen utilization in [0, 1].
+    avg_wait_time:
+      type: number
+      description: Mean wait among non-terminal visible orders in tick units.
+    kitchen_capacity_remaining:
+      type: integer
+      description: Remaining concurrent kitchen capacity at the current tick.
+    current_capacity:
+      type: integer
+      description: Effective kitchen capacity after disruption events.
+    time:
+      type: integer
+      description: Current simulation tick.
+    last_action_result:
+      type: string
+      description: Simulator feedback for the last action.

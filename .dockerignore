@@ -1,0 +1,169 @@
+# ==========================================
+# Docker Build Context Exclusions
+# Reduces image size and build time
+# ==========================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Version Control
+.hg
+.hgignore
+
+# IDE & Editors
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+*.tmp
+*.log
+
+# Node.js - be explicit about locations
+node_modules
+*/node_modules
+*/*/node_modules
+client/node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-shrinkwrap.json
+package-lock.json
+pnpm-lock.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# React
+client/dist/
+client/build/
+
+# Build artifacts
+server/dist/
+server/build/
+
+# Temporary files
+*.bak
+*.backup
+.temp/
+tmp/
+.next/
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Environment files (will be injected at runtime)
+.env.local
+.env.*.local
+
+# Documentation (optional to exclude)
+# docs/
+# Don't exclude markdown files - they might be needed
+
+# Logs
+server/logs/
+logs/
+*.log
+
+# Redis data
+dump.rdb
+
+# System temp
+/tmp/
+/temp/
+
+# OneDrive specific
+OneDrive/
+.onedrive/
+.sync/
+
+# Docker files to exclude (we don't need to rebuild)
+Dockerfile.bak
+docker-compose.bak
+
+# Development files
+.DS_Store
+.env.development
+.env.test
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkins*
+Jenkinsfile
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+dockerfile.bak
+
+# Testing
+test/
+tests/
+__tests__/
+**/*.test.js
+**/*.spec.js
+**/*.test.ts
+**/*.spec.ts
+.mocha*
+
+# Large files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Package managers cache
+.npm
+yarn.lock
+pnpm-lock.yaml
+
+# Optional dev files
+.editorconfig
+.prettierrc
+.eslintrc*
+babel.config.js
+jest.config.js
+
+# Markdown files (keep for reference)
+# SETUP*.md
+# README.md
+
+# Delivery & documentation (optional)
+DELIVERABLES.md
+SUBMISSION*.md
+VALIDATION*.md
