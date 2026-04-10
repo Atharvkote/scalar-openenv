@@ -1,93 +1,83 @@
-"""Task presets for OpenEnv / hackathon evaluation."""
+"""
+Task definitions for FoodDash OpenEnv.
+
+Each task models a different intensity of restaurant peak-hour service.
+All numeric parameters are intentionally deterministic so that scores
+are reproducible across runs without seeding.
+
+Task Difficulty Design
+----------------------
+easy   — 4 orders, generous patience, no VIPs, 16 steps, fail_limit=2.
+         Intended to be solvable by any reasonable heuristic. Baseline score: ~1.0.
+
+medium — 10 orders including VIPs (every 3rd), tighter patience, 22 steps, fail_limit=5.
+         Requires balancing VIP priority against avoiding queue starvation.
+         Baseline score target: 0.65–0.85.
+
+hard   — 20 orders, most are high-priority, patience as low as 2 steps,
+         kitchen capacity still only 2, AND a surprise rush injection at step 5
+         that adds 2 VIP orders already partially expired.
+         Fail limit is generous (12) but the sheer volume defeats naive agents.
+         Baseline score target: 0.35–0.55.
+
+Field Reference
+---------------
+num_orders          : Orders spawned at reset().
+max_steps           : Episode length hard cap.
+max_kitchen_capacity: Simultaneous orders that can be in "processing" state.
+patience_base       : Minimum patience ticks assigned to any order.
+patience_spread     : Patience is patience_base + (idx % patience_spread).
+vip_every           : Every N-th order (1-indexed) is VIP. 0 = no VIPs.
+fail_limit          : Episode ends early when this many orders have failed.
+rush_injection_step : Step at which surprise rush orders are injected. 9999 = never.
+rush_order_count    : How many rush orders to inject.
+"""
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Dict
 
+TASKS: Dict[str, Dict[str, Any]] = {
+    # ------------------------------------------------------------------
+    # EASY — Lunchtime lull: small queue, no VIPs, plenty of time.
+    # ------------------------------------------------------------------
+    "easy": {
+        "num_orders": 4,
+        "max_steps": 16,
+        "max_kitchen_capacity": 2,
+        "patience_base": 5,
+        "patience_spread": 2,      # patience in {5, 6}
+        "vip_every": 0,            # no VIP orders
+        "fail_limit": 2,
+    },
 
-def easy_task() -> dict[str, Any]:
-    """
-    Small lunch rush.
+    # ------------------------------------------------------------------
+    # MEDIUM — Dinner rush: larger queue, VIP guests, less patience.
+    # ------------------------------------------------------------------
+    "medium": {
+        "num_orders": 10,
+        "max_steps": 22,
+        "max_kitchen_capacity": 2,
+        "patience_base": 4,
+        "patience_spread": 3,      # patience in {4, 5, 6}
+        "vip_every": 3,            # every 3rd order is VIP
+        "fail_limit": 5,
+    },
 
-    Few orders, light arrivals, and one VIP customer. The focus is on learning
-    sensible prioritization while keeping low-priority customers from being ignored.
-    """
-    return {
-        "name": "easy",
-        "n_orders": 6,
-        "n_tables": 3,
-        "kitchen_capacity": 2,
-        "capacity_schedule": {},
-        "priority_weights": {"vip": 1, "normal": 4, "low": 1},
-        "complexity_weights": [0.45, 0.40, 0.15],
-        "patience_range": [9, 14],
-        "arrival_window": 2,
-        "initial_visible_orders": 4,
-        "seed": 42,
-        "max_steps": 80,
-        "focus": "service_speed_and_fairness",
-    }
-
-
-def medium_task() -> dict[str, Any]:
-    """
-    Busy service with recommendations enabled.
-
-    The agent must trade off direct kitchen actions against recommendation actions
-    while keeping throughput and fairness strong.
-    """
-    return {
-        "name": "medium",
-        "n_orders": 12,
-        "n_tables": 6,
-        "kitchen_capacity": 3,
-        "capacity_schedule": {6: 2, 10: 3},
-        "priority_weights": {"vip": 2, "normal": 7, "low": 3},
-        "complexity_weights": [0.30, 0.45, 0.25],
-        "patience_range": [8, 13],
-        "arrival_window": 5,
-        "initial_visible_orders": 5,
-        "seed": 4242,
-        "max_steps": 150,
-        "include_recommendation": True,
-        "focus": "throughput_plus_recommendation_quality",
-    }
-
-
-def hard_task() -> dict[str, Any]:
-    """
-    Stress scenario with staggered demand and kitchen disruption.
-
-    Twenty-six orders arrive over time, VIP deadlines are tight, the kitchen loses
-    capacity mid-episode, and the agent must manage overload, fairness, and speed.
-    """
-    return {
-        "name": "hard",
-        "n_orders": 26,
-        "n_tables": 9,
-        "kitchen_capacity": 4,
-        "capacity_schedule": {5: 3, 8: 2, 12: 3, 16: 4},
-        "priority_weights": {"vip": 4, "normal": 12, "low": 10},
-        "complexity_weights": [0.20, 0.45, 0.35],
-        "patience_range": [8, 13],
-        "arrival_window": 9,
-        "initial_visible_orders": 6,
-        "seed": 1337,
-        "max_steps": 190,
-        "include_recommendation": True,
-        "kitchen_overload": True,
-        "focus": "conflicting_objectives_under_pressure",
-    }
-
-
-TASK_REGISTRY: dict[str, Callable[[], dict[str, Any]]] = {
-    "easy": easy_task,
-    "medium": medium_task,
-    "hard": hard_task,
+    # ------------------------------------------------------------------
+    # HARD — Saturday peak: dense high-priority queue + mid-game rush.
+    # The rush arrives at step 5 with wait_time=1 already set — agent
+    # must react within the same step or lose those VIP orders.
+    # ------------------------------------------------------------------
+    "hard": {
+        "num_orders": 20,
+        "max_steps": 15,           # tight — only 15 steps for 20+ orders
+        "max_kitchen_capacity": 2,
+        "patience_base": 2,        # orders expire fast
+        "patience_spread": 4,      # patience in {2, 3, 4, 5}
+        "vip_every": 2,            # every 2nd order is VIP
+        "fail_limit": 12,
+        "rush_injection_step": 5,  # surprise at step 5
+        "rush_order_count": 2,     # 2 nearly-expired high-priority VIP orders
+    },
 }
-
-
-def get_task(name: str) -> dict[str, Any]:
-    if name not in TASK_REGISTRY:
-        raise KeyError(f"Unknown task: {name}")
-    return TASK_REGISTRY[name]()

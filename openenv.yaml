@@ -1,0 +1,7 @@
+name: food-dash-env
+description: RL environment for restaurant optimization
+entry_point: openenv.env:FoodDashEnv
+tasks:
+  - name: easy
+  - name: medium
+  - name: hard
