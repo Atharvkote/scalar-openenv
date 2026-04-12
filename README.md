@@ -1,15 +1,3 @@
----
-title: Food Dash Env
-emoji: 🍽️
-colorFrom: red
-colorTo: pink
-sdk: docker
-sdk_version: "27.5.1"
-app_file: app.py
-app_port: 8000
-pinned: false
----
-
 # OPEN ENV - Resturant Dispatch RL ENV
 ## Overview
 
