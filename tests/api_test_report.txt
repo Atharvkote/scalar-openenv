@@ -1,0 +1,547 @@
+API TEST REPORT
+Generated: 2026-04-11 00:37:02.251739
+
+============================================================
+Health Check
+============================================================
+Endpoint: /health
+Method: GET
+Status Code: 200
+Request Body:
+None
+
+Response:
+{
+  "status": "ok"
+}
+
+
+============================================================
+Reset Easy
+============================================================
+Endpoint: /reset
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "task": "easy"
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 4,
+    "processing_orders": 0,
+    "completed_orders": 0,
+    "failed_orders": 0,
+    "avg_wait_time": 0.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 0
+  },
+  "reward": 0.0,
+  "done": false,
+  "info": {}
+}
+
+
+============================================================
+Reset Invalid Task
+============================================================
+Endpoint: /reset
+Method: POST
+Status Code: 400
+Request Body:
+{
+  "task": "invalid"
+}
+
+Response:
+{
+  "detail": "Unknown task 'invalid'. Available tasks: ['easy', 'medium', 'hard']"
+}
+
+
+============================================================
+Step 1 - Process
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "process",
+  "order_id": 1
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 3,
+    "processing_orders": 1,
+    "completed_orders": 0,
+    "failed_orders": 0,
+    "avg_wait_time": 1.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 0
+  },
+  "reward": 0.18000000000000002,
+  "done": false,
+  "info": {
+    "last_action_error": null,
+    "total_completed": 0,
+    "total_failed": 0,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Step 2 - Process
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "process",
+  "order_id": 2
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 2,
+    "processing_orders": 1,
+    "completed_orders": 1,
+    "failed_orders": 0,
+    "avg_wait_time": 2.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 0
+  },
+  "reward": 1.0,
+  "done": false,
+  "info": {
+    "last_action_error": null,
+    "total_completed": 1,
+    "total_failed": 0,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Step 3 - Prioritize
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "prioritize",
+  "order_id": 1
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 2,
+    "processing_orders": 1,
+    "completed_orders": 1,
+    "failed_orders": 0,
+    "avg_wait_time": 3.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 0
+  },
+  "reward": -0.22,
+  "done": false,
+  "info": {
+    "last_action_error": "invalid_prioritize_status",
+    "total_completed": 1,
+    "total_failed": 0,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Step 4 - Idle
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "idle",
+  "order_id": null
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 2,
+    "processing_orders": 0,
+    "completed_orders": 2,
+    "failed_orders": 0,
+    "avg_wait_time": 4.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 1
+  },
+  "reward": 0.98,
+  "done": false,
+  "info": {
+    "last_action_error": null,
+    "total_completed": 2,
+    "total_failed": 0,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Invalid Order ID
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "process",
+  "order_id": 999
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 2,
+    "processing_orders": 0,
+    "completed_orders": 2,
+    "failed_orders": 0,
+    "avg_wait_time": 5.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 2
+  },
+  "reward": -0.52,
+  "done": false,
+  "info": {
+    "last_action_error": "invalid_process_target",
+    "total_completed": 2,
+    "total_failed": 0,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Missing order_id
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 200
+Request Body:
+{
+  "action_type": "process"
+}
+
+Response:
+{
+  "observation": {
+    "pending_orders": 1,
+    "processing_orders": 0,
+    "completed_orders": 2,
+    "failed_orders": 1,
+    "avg_wait_time": 6.0,
+    "high_priority_pending": 0,
+    "urgent_orders": 1
+  },
+  "reward": -1.0,
+  "done": false,
+  "info": {
+    "last_action_error": "invalid_process_target",
+    "total_completed": 2,
+    "total_failed": 1,
+    "overload_penalty_counter": 0,
+    "rush_injected": false
+  }
+}
+
+
+============================================================
+Wrong Data Type
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 422
+Request Body:
+{
+  "action_type": "process",
+  "order_id": "abc"
+}
+
+Response:
+{
+  "detail": [
+    {
+      "type": "int_parsing",
+      "loc": [
+        "body",
+        "order_id"
+      ],
+      "msg": "Input should be a valid integer, unable to parse string as an integer",
+      "input": "abc"
+    }
+  ]
+}
+
+
+============================================================
+Invalid Action Type
+============================================================
+Endpoint: /step
+Method: POST
+Status Code: 422
+Request Body:
+{
+  "action_type": "unknown",
+  "order_id": 1
+}
+
+Response:
+{
+  "detail": [
+    {
+      "type": "literal_error",
+      "loc": [
+        "body",
+        "action_type"
+      ],
+      "msg": "Input should be 'process', 'prioritize' or 'idle'",
+      "input": "unknown",
+      "ctx": {
+        "expected": "'process', 'prioritize' or 'idle'"
+      }
+    }
+  ]
+}
+
+
+============================================================
+State Check
+============================================================
+Endpoint: /state
+Method: GET
+Status Code: 200
+Request Body:
+None
+
+Response:
+{
+  "task": "easy",
+  "step_count": 6,
+  "max_steps": 16,
+  "max_kitchen_capacity": 2,
+  "total_completed": 2,
+  "total_failed": 1,
+  "overload_penalty_counter": 0,
+  "fail_limit": 2,
+  "rush_injection_step": 9999,
+  "rush_order_count": 0,
+  "rush_injected": false,
+  "orders": [
+    {
+      "id": 1,
+      "status": "done",
+      "prep_time": 0,
+      "priority": "low",
+      "wait_time": 0,
+      "patience": 5,
+      "is_vip": false
+    },
+    {
+      "id": 2,
+      "status": "done",
+      "prep_time": 0,
+      "priority": "medium",
+      "wait_time": 1,
+      "patience": 6,
+      "is_vip": false
+    },
+    {
+      "id": 3,
+      "status": "failed",
+      "prep_time": 5,
+      "priority": "high",
+      "wait_time": 6,
+      "patience": 5,
+      "is_vip": false
+    },
+    {
+      "id": 4,
+      "status": "pending",
+      "prep_time": 5,
+      "priority": "low",
+      "wait_time": 6,
+      "patience": 6,
+      "is_vip": false
+    }
+  ]
+}
+
+
+============================================================
+Full Test
+============================================================
+Endpoint: /test
+Method: GET
+Status Code: 200
+Request Body:
+None
+
+Response:
+{
+  "summary": "All tasks passed",
+  "all_passed": true,
+  "total_time_seconds": 0.001,
+  "tasks": [
+    {
+      "task": "easy",
+      "score": 0.9999,
+      "steps_taken": 7,
+      "total_orders": 4,
+      "completed": 4,
+      "failed": 0,
+      "overload_events": 0,
+      "rush_injected": false,
+      "total_reward": 4.48,
+      "avg_reward_per_step": 0.64,
+      "score_in_valid_range": true
+    },
+    {
+      "task": "medium",
+      "score": 0.38,
+      "steps_taken": 10,
+      "total_orders": 10,
+      "completed": 7,
+      "failed": 3,
+      "overload_events": 1,
+      "rush_injected": false,
+      "total_reward": 4.3,
+      "avg_reward_per_step": 0.43,
+      "score_in_valid_range": true
+    },
+    {
+      "task": "hard",
+      "score": 0.0001,
+      "steps_taken": 7,
+      "total_orders": 22,
+      "completed": 5,
+      "failed": 15,
+      "overload_events": 0,
+      "rush_injected": true,
+      "total_reward": 0.64,
+      "avg_reward_per_step": 0.0914,
+      "score_in_valid_range": true
+    }
+  ]
+}
+
+
+============================================================
+Smoke Test
+============================================================
+Endpoint: /test/smoke
+Method: GET
+Status Code: 200
+Request Body:
+None
+
+Response:
+{
+  "ok": true,
+  "task": "easy",
+  "reset_observation": {
+    "pending_orders": 4,
+    "processing_orders": 0,
+    "completed_orders": 0,
+    "failed_orders": 0,
+    "avg_wait_time": 0.0,
+    "high_priority_pending": 1,
+    "urgent_orders": 0
+  },
+  "step_reward": 0.18,
+  "step_done": false,
+  "score": 0.0001
+}
+
+
+============================================================
+Inference Test
+============================================================
+Endpoint: /test/inference
+Method: GET
+Status Code: 200
+Request Body:
+None
+
+Response:
+{
+  "ok": true,
+  "results": [
+    {
+      "task": "easy",
+      "steps": 7,
+      "rewards": [
+        0.18,
+        0.18,
+        0.98,
+        1.0,
+        0.18,
+        0.98,
+        0.98
+      ],
+      "score": 0.9999,
+      "completed": 4,
+      "failed": 0
+    },
+    {
+      "task": "medium",
+      "steps": 10,
+      "rewards": [
+        0.18,
+        0.18,
+        1.0,
+        0.58,
+        1.0,
+        -1.0,
+        1.0,
+        0.38,
+        -0.02,
+        1.0
+      ],
+      "score": 0.38,
+      "completed": 7,
+      "failed": 3
+    },
+    {
+      "task": "hard",
+      "steps": 7,
+      "rewards": [
+        0.18,
+        0.58,
+        -0.12,
+        1.0,
+        -1.0,
+        1.0,
+        -1.0
+      ],
+      "score": 0.0001,
+      "completed": 5,
+      "failed": 15
+    }
+  ]
+}
+
